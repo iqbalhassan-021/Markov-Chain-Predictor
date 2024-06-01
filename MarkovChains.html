@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markov Chain Predictor</title>
+    <style>
+        *{
+            padding: 0%;
+            margin: 0%;
+            box-sizing: border-box;
+            font-family: sans-serif;
+        }
+        .wrapper{
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .container{
+            height: auto;
+            width: auto;
+            display: flex;
+            flex-direction: column;
+            }
+            input{
+                height: 30px;
+                width: 300px;
+                padding-left: 10px;
+
+            }
+            button{
+                height: 30px;
+                width: auto;
+                cursor: pointer;
+                outline: none;
+                border: none;
+                background-color: #0f0f0f;
+                color: white;
+            }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <h1>Markov Chain Predictor</h1>
+        <br>
+        <div class="container">
+            <label for="sequence">Enter Sequence (comma separated):</label>
+            <br>
+            <input type="text" id="sequence" placeholder="e.g., 1,2,1,2,3,2,1">
+            <br>
+            <button onclick="predictNext()">Predict Next Number</button>
+        </div>
+        <br>
+        <strong><p id="predictionResult"></p></strong>
+        
+    </div>
+
+
+    <script>
+        function predictNext() {
+            const sequenceInput = document.getElementById('sequence').value;
+            const sequence = sequenceInput.split(',').map(Number);
+            const markovChain = {};
+
+            // Build the Markov Chain transition matrix
+            for (let i = 0; i < sequence.length - 1; i++) {
+                const currentState = sequence[i];
+                const nextState = sequence[i + 1];
+
+                if (!markovChain[currentState]) {
+                    markovChain[currentState] = {};
+                }
+
+                if (!markovChain[currentState][nextState]) {
+                    markovChain[currentState][nextState] = 0;
+                }
+
+                markovChain[currentState][nextState]++;
+            }
+
+            // Get the last number in the sequence to predict the next number
+            const lastNumber = sequence[sequence.length - 1];
+            const nextStates = markovChain[lastNumber];
+
+            if (!nextStates) {
+                document.getElementById('predictionResult').innerText = "Insufficient data to predict the next number.";
+                return;
+            }
+
+            // Predict the next number based on probabilities
+            const possibleNextNumbers = Object.keys(nextStates);
+            const weights = Object.values(nextStates);
+            const totalWeight = weights.reduce((acc, weight) => acc + weight, 0);
+
+            // Generate a random number to select the next state based on the distribution
+            let randomWeight = Math.random() * totalWeight;
+            for (let i = 0; i < weights.length; i++) {
+                randomWeight -= weights[i];
+                if (randomWeight <= 0) {
+                    document.getElementById('predictionResult').innerText = "Predicted Next Number: " + possibleNextNumbers[i];
+                    return;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
